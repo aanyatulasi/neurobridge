@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeuroBridge - Emotional AI Assistant</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+            height: 0;
+            overflow: hidden;
+            background: #000;
+            border-radius: 1rem;
+        }
+        .video-container video,
+        .video-container canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1rem;
+        }
+        .message {
+            position: relative;
+            padding: 0.75rem 1rem;
+            border-radius: 1rem;
+            margin-bottom: 0.5rem;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+        .user-message {
+            background: #4f46e5;
+            color: white;
+            margin-left: auto;
+            border-bottom-right-radius: 0.25rem;
+        }
+        .bot-message {
+            background: #374151;
+            color: white;
+            margin-right: auto;
+            border-bottom-left-radius: 0.25rem;
+        }
+        #chat-messages {
+            overflow-y: auto;
+            max-height: 400px;
+            scrollbar-width: thin;
+            scrollbar-color: #4f46e5 #1f2937;
+        }
+        #chat-messages::-webkit-scrollbar {
+            width: 6px;
+        }
+        #chat-messages::-webkit-scrollbar-track {
+            background: #1f2937;
+            border-radius: 3px;
+        }
+        #chat-messages::-webkit-scrollbar-thumb {
+            background-color: #4f46e5;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-gray-900 to-gray-800 min-h-screen p-4">
+    <!-- Emotion Overlay -->
+    <div id="emotion-overlay" class="fixed top-4 right-4 z-50 flex items-start space-x-3">
+        <div class="glass-card p-3 rounded-full cursor-pointer" id="emotion-icon-container">
+            <i id="emotion-icon" class="fas fa-smile text-2xl text-yellow-400"></i>
+        </div>
+        <div id="tooltip" class="glass-card px-4 py-2 text-sm max-w-xs hidden">
+            <p>Emotion analysis will appear here</p>
+        </div>
+    </div>
+
+    <div class="container mx-auto max-w-6xl">
+        <header class="text-center mb-8">
+            <h1 class="text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-blue-600 mb-2">NeuroBridge</h1>
+            <p class="text-gray-400">Your emotional AI companion for meaningful conversations</p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Video Feed -->
+            <div class="lg:col-span-2 space-y-4">
+                <div class="video-container">
+                    <video id="video" autoplay muted class="w-full h-full"></video>
+                    <canvas id="canvas" class="absolute top-0 left-0" style="display: none;"></canvas>
+                </div>
+                
+                <div class="flex flex-wrap gap-3 justify-center">
+                    <button id="startVideo" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg transition flex items-center">
+                        <i class="fas fa-video mr-2"></i> Start Camera
+                    </button>
+                    <button id="startAudio" class="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-lg transition flex items-center">
+                        <i class="fas fa-microphone mr-2"></i> Start Voice
+                    </button>
+                    <button id="stopAll" class="bg-rose-600 hover:bg-rose-700 text-white px-6 py-2 rounded-lg transition flex items-center">
+                        <i class="fas fa-stop mr-2"></i> Stop All
+                    </button>
+                </div>
+
+                <div class="glass-card p-4">
+                    <h3 class="text-lg font-medium text-white mb-2">Emotion Analysis</h3>
+                    <div id="emotion-display" class="text-center text-4xl py-4">
+                        <span class="text-gray-400">😐</span>
+                    </div>
+                    <div id="emotion-details" class="text-center text-sm text-gray-300">
+                        Confidence: 0%
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat Interface -->
+            <div class="space-y-4">
+                <div class="glass-card p-4 h-[500px] flex flex-col">
+                    <div id="chat-messages" class="flex-1 overflow-y-auto mb-4 space-y-3">
+                        <!-- Messages will appear here -->
+                        <div class="text-center text-gray-400 py-8">
+                            <i class="fas fa-comments text-4xl mb-2"></i>
+                            <p>Start a conversation with NeuroBridge</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-auto">
+                        <div class="relative">
+                            <input 
+                                type="text" 
+                                id="message-input" 
+                                placeholder="Type your message..." 
+                                class="w-full bg-gray-700 bg-opacity-50 border border-gray-600 rounded-full py-3 px-4 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            >
+                            <button id="send-button" class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full p-2">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-card p-4">
+                    <h3 class="text-lg font-medium text-white mb-3">Session Summary</h3>
+                    <div id="session-stats" class="space-y-2 text-sm text-gray-300">
+                        <div class="flex justify-between">
+                            <span>Duration:</span>
+                            <span id="session-duration">0:00</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Emotional State:</span>
+                            <span id="current-emotion" class="font-medium">Neutral</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+    <script src="/js/detect.js"></script>
+    <script src="/js/main.js"></script>
+</body>
+</html>
