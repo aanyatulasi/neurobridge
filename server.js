@@ -1,8 +1,10 @@
+require('dotenv').config();
 const express = require('express');
 const WebSocket = require('ws');
 const http = require('http');
 const cors = require('cors');
 const path = require('path');
+const backendRoutes = require('./backend');
 
 const app = express();
 const server = http.createServer(app);
@@ -11,7 +13,7 @@ const wss = new WebSocket.Server({ server });
 // Middleware
 app.use(cors());
 app.use(express.json());
-app.use(express.static('.')); // Serve static files from the root directory
+app.use(express.static('public')); // Serve static files from the public directory
 
 // In-memory storage (replace with a database in production)
 const users = new Map();
@@ -59,6 +61,14 @@ wss.on('connection', (ws) => {
 app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
+
+// Dashboard route
+app.get('/dashboard', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'dashboard.html'));
+});
+
+// Emotion Analysis Endpoints
+app.use('/api', backendRoutes);
 
 app.get('/api/users', (req, res) => {
     res.json(Array.from(users.values()));
