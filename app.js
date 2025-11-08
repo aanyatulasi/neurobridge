@@ -192,9 +192,35 @@ function stopEmotionDetection() {
     }
 }
 
+// Update background based on emotion
+function updateBackgroundForEmotion(emotion) {
+    const root = document.documentElement;
+    
+    // Define gradient colors for each emotion
+    const emotionGradients = {
+        'happy': { start: '#4f46e5', end: '#7c3aed' },      // Purple to violet
+        'sad': { start: '#3b82f6', end: '#60a5fa' },        // Blue to light blue
+        'angry': { start: '#ef4444', end: '#f87171' },      // Red to light red
+        'surprised': { start: '#f59e0b', end: '#fbbf24' },  // Yellow to light yellow
+        'fearful': { start: '#8b5cf6', end: '#c4b5fd' },    // Indigo to light indigo
+        'disgusted': { start: '#10b981', end: '#34d399' },  // Green to light green
+        'neutral': { start: '#4b5563', end: '#6b7280' },    // Gray to light gray
+        'calm': { start: '#3b82f6', end: '#60a5fa' }        // Blue to light blue
+    };
+    
+    // Default to neutral if emotion not found
+    const { start = '#4b5563', end = '#6b7280' } = emotionGradients[emotion] || emotionGradients['neutral'];
+    
+    // Update CSS variables
+    root.style.setProperty('--bg-gradient-start', start);
+    root.style.setProperty('--bg-gradient-end', end);
+}
+
 // Update emotion display with tooltip
 function updateEmotionDisplay(emotion) {
     currentEmotion = emotion;
+    updateBackgroundForEmotion(emotion);
+    
     const emotionIcons = {
         happy: '😊',
         sad: '😢',
